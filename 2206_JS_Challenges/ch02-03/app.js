@@ -1,21 +1,13 @@
 const h1 = document.querySelector("div.hello:first-child h1");
 
 function handleTitleClick() {
-    if(h1.className === "active") {
-        h1.className = "";
-    } else {
-        h1.className = "active";
-    }
+    h1.classList.toggle("active");
+    // const clickedClass = "active";
+    // if(h1.classList.contains(clickedClass)) {
+    //     h1.classList.remove(clickedClass);
+    // } else {
+    //     h1.classList.add(clickedClass);
+    // }
 }
 
-// function handleMouseEnter() {
-//     title.innerText = "mouse is here!";
-// }
-
-// function handleMouseLeave() {
-//     title.innerText = "mouse is gone!";
-// }
-
 title.addEventListener("click", handleTitleClick);
-// title.addEventListener("mouseenter", handleMouseEnter);
-// title.addEventListener("mouseleace", handleMouseLeave);
