@@ -26,15 +26,26 @@ function onSocketClose() {
 }
 
 wss.on("connection", (socket) => {
-  sockets.push(socket);
-  console.log("Connected to Browser ✅");
+    sockets.push(socket);
+    socket["nickname"] = "Anon"; //소켓에 정보를 저장할 수 있다.
+    console.log("Connected to Browser ✅");
 
-  socket.on("close", onSocketClose);
+    socket.on("close", onSocketClose);
 
-  socket.on("message", (message) => {
-    sockets.forEach((aSocket) => aSocket.send(message.toString()));
-    // 연결된 모든 소켓에 접근하기 위해 forEach를 사용한다. 크롬에게 받으면 크롬에게만 보내고 파이어 폭스에게 받으면 파이어폭스에게만 돌려보내는 것을 방지.
+    socket.on("message", (msg) => {
+      const message = JSON.parse(msg);
+      console.log(message)
+      switch (message.type) {
+        case "new_message":
+          sockets.forEach((aSocket) =>
+            aSocket.send(`${socket.nickname}: ${message.payload}`)
+          );
+          break;
+        case "nickname":
+          socket["nickname"] = message.payload;
+          break;
+      }
+    });
   });
-});
 
 server.listen(3000, handleListen);
