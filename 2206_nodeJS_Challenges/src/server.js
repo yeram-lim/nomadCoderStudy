@@ -32,6 +32,13 @@ wsServer.on("connection", (socket) => { // 프론트와 연결한다. 소켓을 
     done();
     socket.to(roomName).emit("welcome");
   });
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+  });
+  socket.on("new_message", (msg, room, done) => {
+    socket.to(room).emit("new_message", msg);
+    done();
+  });
 });
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
