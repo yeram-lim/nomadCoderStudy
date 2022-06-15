@@ -1,5 +1,6 @@
 import http from "http";
-import WebSocket, {WebSocketServer}  from "ws";
+// import WebSocket, {WebSocketServer}  from "ws";
+import { Server } from "socket.io";
 import express from "express";
 import path from 'path';
 
@@ -13,39 +14,54 @@ app.use("/public", express.static(__dirname + "/src/public"));
 app.get("/", (req, res) => res.render("home"));
 app.get("/*", (_, res) => res.redirect("/"));
 
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
+// const handleListen = () => console.log(`Listening on http://localhost:3000`);
 
-const server = http.createServer(app); //http 서버를 만든다. 이렇게 해야 서버에 접근 가능
-const wss = new WebSocketServer({ server }); 
+// const server = http.createServer(app); //http 서버를 만든다. 이렇게 해야 서버에 접근 가능
+// const wss = new WebSocketServer({ server }); 
 // 웹소켓 서버를 만들고 http 서버와 함께 둘 다 작동시킨다., 웹소켓 서버만 구동시기고 싶으면 {server}인자를 안 넘겨주면 된다   
 
-const sockets = [];
+const httpServer = http.createServer(app);
+const wsServer = new Server(httpServer);
 
-function onSocketClose() {
-    console.log("Disconnected from the Browser ❌");
-}
-
-wss.on("connection", (socket) => {
-    sockets.push(socket);
-    socket["nickname"] = "Anon"; //소켓에 정보를 저장할 수 있다.
-    console.log("Connected to Browser ✅");
-
-    socket.on("close", onSocketClose);
-
-    socket.on("message", (msg) => {
-      const message = JSON.parse(msg);
-      console.log(message)
-      switch (message.type) {
-        case "new_message":
-          sockets.forEach((aSocket) =>
-            aSocket.send(`${socket.nickname}: ${message.payload}`)
-          );
-          break;
-        case "nickname":
-          socket["nickname"] = message.payload;
-          break;
-      }
-    });
+wsServer.on("connection", (socket) => { // 프론트와 연결한다. 소켓을 받는다.
+  socket.on("enter_room", (msg, done) => {
+    console.log(msg);
+    setTimeout(() => {
+      done();
+    }, 10000);
   });
+});
 
-server.listen(3000, handleListen);
+const handleListen = () => console.log(`Listening on http://localhost:3000`);
+httpServer.listen(3000, handleListen);
+
+// const sockets = [];
+
+// function onSocketClose() {
+//     console.log("Disconnected from the Browser ❌");
+// }
+
+// wss.on("connection", (socket) => {
+//     sockets.push(socket);
+//     socket["nickname"] = "Anon"; //소켓에 정보를 저장할 수 있다.
+//     console.log("Connected to Browser ✅");
+
+//     socket.on("close", onSocketClose);
+
+//     socket.on("message", (msg) => {
+//       const message = JSON.parse(msg);
+//       console.log(message)
+//       switch (message.type) {
+//         case "new_message":
+//           sockets.forEach((aSocket) =>
+//             aSocket.send(`${socket.nickname}: ${message.payload}`)
+//           );
+//           break;
+//         case "nickname":
+//           socket["nickname"] = message.payload;
+//           break;
+//       }
+//     });
+//   });
+
+// server.listen(3000, handleListen);
