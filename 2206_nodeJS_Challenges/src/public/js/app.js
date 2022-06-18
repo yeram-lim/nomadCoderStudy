@@ -1,94 +1,72 @@
-const socket = io(); //io는 백엔드와 자동적으로 연결해주는 함수이다. 이렇게만 쓰면 서버와 연결 완료
+const socket = io();
 
-const welcome = document.getElementById("welcome");
-const welcomeForm = welcome.querySelector("form");
-const room = document.getElementById("room");
-const user = document.getElementById("user");
+const myFace = document.getElementById("myFace");
+const muteBtn = document.getElementById("mute");
+const cameraBtn = document.getElementById("camera");
+const camerasSelect = document.getElementById("cameras");
 
-room.hidden = true;
-user.hidden = true;
+let myStream;
+let muted = false;
+let cameraOff = false;
 
-let roomName;
-let nickName;
-
-welcomeForm.addEventListener("submit", handleRoomSubmit);
-
-function handleRoomSubmit(event) {
-  event.preventDefault();
-  const input = welcomeForm.querySelector("input");
-
-  roomName = input.value;
-  socket.emit("enter_room", input.value, showRoom);
-  input.value = "";
-}
-
-function showRoom() {
-  // 방 메시지 보내는 창 나오게 함
-  welcome.hidden = true;
-  room.hidden = false;
-  user.hidden = false;
-
-  const roomNameBox = document.querySelector("#roomName");
-  roomNameBox.innerText = `Room ${roomName}`;
-
-  const msgForm = room.querySelector("#msg");
-  const nameForm = user.querySelector("#name");
-  msgForm.addEventListener("submit", handleMessageSubmit);
-  nameForm.addEventListener("submit", handleNicknameSubmit);
-}
-
-function handleMessageSubmit(event) {
-  event.preventDefault();
-  const input = room.querySelector("#msg input");
-  const value = input.value;
-  socket.emit("new_message", input.value, roomName, () => {
-    addMessage(`You: ${value}`);
-  });
-  input.value = "";
-}
-
-socket.on("new_message", addMessage);
-//(msg) => {addMessage(msg)} 와 같음
-
-function handleNicknameSubmit(event) {
-  event.preventDefault();
-  const input = user.querySelector("#name input");
-
-  socket.emit("nickname", input.value, showRoom);
-  nickName = input.value;
-  input.value = "";
-}
-
-function addMessage(message) {
-    const ul = room.querySelector("ul");
-    const li = document.createElement("li");
-    li.innerText = message;
-    ul.appendChild(li);
-}
-
-
-socket.on("welcome", (user, newCount) => {
-  const h3 = document.querySelector("h3#roomName");
-  h3.innerText = `Room ${roomName} (${newCount})`;
-  addMessage(`${user} arrived!`);
-});
-
-socket.on("bye", (left, newCount) => {
-  addMessage(`${left} left ㅠㅠ`);
-});
-
-
-socket.on("room_change", (rooms) => {
-  const roomList = document.querySelector("ul");
-  roomList.innerHTML = '';
-  if(rooms.length === 0) {
-    roomList.innerHTML = '';
-    return;
+async function getCameras() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    // videoinput인 카메라만 (유저의 카메라만) 불러온다.
+    const cameras = devices.filter((device) => device.kind === "videoinput"); 
+    // 카메라 아이디와 label(기기명)을 불러와서 html selection의 option으로 넣어준다.
+    cameras.forEach((camera) => {
+      const option = document.createElement("option");
+      option.value = camera.deviceId;
+      option.innerText = camera.label;
+      camerasSelect.appendChild(option);
+    });
+  } catch (e) {
+    console.log(e);
   }
-  rooms.forEach(room => {
-    const li = document.createElement("li");
-    li.innerText = room;
-    roomList.append(li);
-  });
-});
+}
 
+async function getMedia() {
+  try {
+    myStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    }); //media stream을 만든다.
+    myFace.srcObject = myStream; //media stream을 myFace element에 넣어준다.
+    await getCameras();
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+getMedia();
+
+function handleMuteClick() {
+  myStream
+  .getAudioTracks()
+  .forEach((track) => (track.enabled = !track.enabled));
+
+  if (!muted) {
+    muteBtn.innerText = "Unmute";
+    muted = true;
+  } else {
+    muteBtn.innerText = "Mute";
+    muted = false;
+  }
+}
+function handleCameraClick() {
+  myStream
+  .getVideoTracks()
+  .forEach((track) => (track.enabled = !track.enabled));
+
+  if (cameraOff) {
+    cameraBtn.innerText = "Turn Camera Off";
+    cameraOff = false;
+  } else {
+    cameraBtn.innerText = "Turn Camera On";
+    cameraOff = true;
+  }
+}
+
+muteBtn.addEventListener("click", handleMuteClick);
+cameraBtn.addEventListener("click", handleCameraClick);
