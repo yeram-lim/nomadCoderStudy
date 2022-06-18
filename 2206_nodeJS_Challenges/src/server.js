@@ -18,15 +18,19 @@ const wsServer = new Server(httpServer);
 
 wsServer.on("connection", (socket) => { 
   // 방에 입장했을 때
-  socket.on("join_room", (roomName, done) => { //socket을 방에 참여시킨다.
+  socket.on("join_room", (roomName) => { //socket을 방에 참여시킨다.
     socket.join(roomName);
-    done();
     socket.to(roomName).emit("welcome");
   });
 
   // offer를 주고 받으며 브라우저간 연결 통로를 만들 때
   socket.on("offer", (offer, roomName) => {
     socket.to(roomName).emit("offer", offer);
+  });
+
+  // peer2가 offer를 받고 나서 answer를 보낼 때 
+  socket.on("answer", (answer, roomName) => {
+    socket.to(roomName).emit("answer", answer);
   });
 });
 
