@@ -125,24 +125,50 @@ socket.on("welcome", async () => {
 });
 
 socket.on("offer", async (offer) => {
+  console.log("received the offer");
   // 4. peer1이 offer를 보내면 peer2가 RemoteDescription을 설정한다.
   myPeerConnection.setRemoteDescription(offer);
+
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  console.log("sent the answer");
 });
 
 // 서버에서 answer를 받았을 때
 socket.on("answer", (answer) => {
+  console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
+});
+
+// 서버에서 iceCandidate를 받았을 때
+socket.on("ice", (ice) => {
+  console.log("received candidate");
+  myPeerConnection.addIceCandidate(ice);
 });
 
 // RTC Code
 function makeConnection() {
   // 1. 방에 접속한 양쪽 브라우저(유저)들의 연결 통로를 만든다.
   myPeerConnection = new RTCPeerConnection();
-  // 2. 양쪽 브라우저들의 카메라, 오디오를 불러와 연결시켰ㅅ다. 
+
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
+
+  // 2. 양쪽 브라우저들의 카메라, 오디오를 불러와 연결시켰다. 
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  console.log("sent candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  //peer들끼리 stream을 주고 받는다. peer2의 비디오를 넣는다.
+  console.log("got an event from my peer");
+  const peerFace = document.getElementById("peerFace");
+  peerFace.srcObject = data.stream;
 }
