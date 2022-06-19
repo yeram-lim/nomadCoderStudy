@@ -123,8 +123,14 @@ async function handleWelcomeSubmit(event) {
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
 // Socket Code
+let myDataChannel;
 let myPeerConnection;
 socket.on("welcome", async () => {
+  // offer을 생성하기 전에 데이터채널을 만든다.
+  myDataChannel = myPeerConnection.createDataChannel("chat");
+  myDataChannel.addEventListener("message", (event) => console.log(event.data));
+  console.log("made data channel");
+
   // 3. peer1이 offer를 만들어서 이를 서버에 보낸다. 여기서 offer란 다른 유저가 해당 방에 들어올 수 있도록 초대장을 보내는 것과 같은 역할이다.
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
@@ -133,6 +139,13 @@ socket.on("welcome", async () => {
 });
 
 socket.on("offer", async (offer) => {
+  myPeerConnection.addEventListener("datachannel", (event) => {
+    myDataChannel = event.channel;
+    myDataChannel.addEventListener("message", (event) =>
+      console.log(event.data)
+    );
+  });
+
   console.log("received the offer");
   // 4. peer1이 offer를 보내면 peer2가 RemoteDescription을 설정한다.
   myPeerConnection.setRemoteDescription(offer);
@@ -172,7 +185,7 @@ function makeConnection() {
       },
     ],
   });
-  
+
   myPeerConnection.addEventListener("icecandidate", handleIce);
   myPeerConnection.addEventListener("addstream", handleAddStream);
 
