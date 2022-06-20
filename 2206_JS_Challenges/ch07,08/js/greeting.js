@@ -11,6 +11,7 @@ function onLoginSubmit(event) {
     const username = loginInput.value;
     localStorage.setItem("USERNAME_KEY", username);
     paintGreeting(username);
+    loginForm.style.display = "none";
 }
 
 loginForm.addEventListener("submit", onLoginSubmit);
