@@ -1,17 +1,12 @@
-let a : unknown;
+// function add(a: number, b: number) {
+//   return a + b
+// }
 
-if(typeof a === "number") {
-  let b = a + 1
-}
+// const add = (a: number, b: number) => {
+//   return a + b
+// }
 
-if(typeof a === "string") {
-  let b = a.toUpperCase();
-}
+type Add = (a: number, b: number) => number;
 
-function hello() {
-  console.log('x')
-} //return이 없으므로 void
+const add: Add = (a, b) => a + b;
 
-function hi() : never {
-  throw new Error("xx")
-}
