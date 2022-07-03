@@ -7,7 +7,28 @@ function add(a: number, b: number) {
 //   return a + b
 // }
 
-// type Add = (a: number, b: number) => number;
+type Add = {
+  (a: number, b: number) : number
+  (a: number, b: string) : number
+}
+
+type Config = {
+  path: string,
+  state: object
+}
+
+type Push = {
+  (path: string): void
+  (config: Config): void
+}
+
+const push: Push = (config) => {
+  if(typeof config === "string") {
+    console.log(config)
+  } else {
+    console.log(config.path)
+  }
+}
 
 // const add: Add = (a, b) => a + b;
 
