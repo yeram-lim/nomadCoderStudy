@@ -1,17 +1,17 @@
-interface User {
-  name: string
-}
+// interface User {
+//   name: string
+// }
 
-interface User {
-  lastName: string
-}
+// interface User {
+//   lastName: string
+// }
 
-interface User {
-  health: number
-}
+// interface User {
+//   health: number
+// }
 
-const yeram: User = {
-  name: "yeram",
-  lastName: "lim",
-  health: 10
-}
+// const yeram: User = {
+//   name: "yeram",
+//   lastName: "lim",
+//   health: 10
+// }
