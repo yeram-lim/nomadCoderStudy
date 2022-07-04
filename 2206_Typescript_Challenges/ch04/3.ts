@@ -25,10 +25,15 @@ interface User {
   fullName(): string,
 }
 
-class Player implements User {
+interface Human {
+  health: number
+}
+
+class Player implements User, Human {
   constructor(
     public firstName: string,
-    public lastName: string
+    public lastName: string,
+    public health: number
   ) {}
   fullName() {
     return `${this.firstName} ${this.lastName}`
